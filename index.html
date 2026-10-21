@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Calculator</title>
+    <style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.calculator {
+    background-color: #262523;
+    padding: 25px;
+    border-radius: 15px;
+    width: 340px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+}
+
+.calculator h1 {
+    color: white;
+    text-align: center;
+    font-size: 22px;
+    margin-bottom: 15px;
+}
+
+/* Display part */
+.display {
+    background-color: #f4f4f4;
+    border-radius: 8px;
+    padding: 10px 15px;
+    margin-bottom: 20px;
+    text-align: right;
+    min-height: 85px;
+}
+
+#history {
+    font-size: 16px;
+    color: #888;
+    min-height: 22px;
+}
+
+#screen {
+    font-size: 36px;
+    color: #262523;
+    margin-top: 5px;
+    overflow-x: auto;
+}
+
+/* Buttons part */
+.buttons {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+}
+
+button {
+    padding: 18px 0;
+    font-size: 20px;
+    border: none;
+    border-radius: 8px;
+    background-color: #ffffff;
+    color: #262523;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #dddddd;
+}
+
+.operator {
+    background-color: #f7910f;
+    color: white;
+}
+
+.operator:hover {
+    background-color: #d97d08;
+}
+
+.clear {
+    background-color: #d9534f;
+    color: white;
+}
+
+.clear:hover {
+    background-color: #b9413d;
+}
+
+.equal {
+    background-color: #0d9450;
+    color: white;
+    grid-column: span 2;
+}
+
+.equal:hover {
+    background-color: #0a7a41;
+}
+
+    </style>
+</head>
+<body>
+    <div class="calculator">
+        <h1>Calculator</h1>
+
+        <!-- Display -->
+        <div class="display">
+            <div id="history"></div>
+            <div id="screen">0</div>
+        </div>
+
+        <!-- Buttons -->
+        <div class="buttons">
+            <button class="clear" onclick="clearAll()">C</button>
+            <button class="clear" onclick="deleteLast()">DEL</button>
+            <button class="operator" onclick="chooseOperator('%')">%</button>
+            <button class="operator" onclick="chooseOperator('÷')">÷</button>
+
+            <button onclick="appendNumber('7')">7</button>
+            <button onclick="appendNumber('8')">8</button>
+            <button onclick="appendNumber('9')">9</button>
+            <button class="operator" onclick="chooseOperator('×')">×</button>
+
+            <button onclick="appendNumber('4')">4</button>
+            <button onclick="appendNumber('5')">5</button>
+            <button onclick="appendNumber('6')">6</button>
+            <button class="operator" onclick="chooseOperator('-')">-</button>
+
+            <button onclick="appendNumber('1')">1</button>
+            <button onclick="appendNumber('2')">2</button>
+            <button onclick="appendNumber('3')">3</button>
+            <button class="operator" onclick="chooseOperator('+')">+</button>
+
+            <button onclick="appendNumber('0')">0</button>
+            <button onclick="appendNumber('.')">.</button>
+            <button class="equal" onclick="calculate()">=</button>
+        </div>
+    </div>
+
+    <script>
+// Calculator ka saara logic yahan hai
+
+var currentNumber = "";   // jo number abhi type ho raha hai
+var previousNumber = "";  // pehla number
+var operator = "";        // + - × ÷ %
+
+var displayScreen = document.getElementById("screen");
+var displayHistory = document.getElementById("history");
+
+// Number ya dot dabane par
+function appendNumber(num) {
+    // do dot nahi ho sakte ek number mein
+    if (num === "." && currentNumber.includes(".")) {
+        return;
+    }
+    // shuru mein dot aaye to 0. bana do
+    if (num === "." && currentNumber === "") {
+        currentNumber = "0";
+    }
+    currentNumber = currentNumber + num;
+    updateScreen();
+}
+
+// Operator dabane par
+function chooseOperator(op) {
+    if (currentNumber === "" && previousNumber === "") {
+        return;
+    }
+
+    // agar pehle se operator laga hua hai to pehle us ka result nikalo
+    if (previousNumber !== "" && currentNumber !== "") {
+        calculate();
+    }
+
+    if (currentNumber !== "") {
+        previousNumber = currentNumber;
+        currentNumber = "";
+    }
+
+    operator = op;
+    displayHistory.innerText = previousNumber + " " + operator;
+    displayScreen.innerText = "0";
+}
+
+// = dabane par
+function calculate() {
+    if (previousNumber === "" || currentNumber === "" || operator === "") {
+        return;
+    }
+
+    var a = parseFloat(previousNumber);
+    var b = parseFloat(currentNumber);
+    var result = 0;
+
+    if (operator === "+") {
+        result = a + b;
+    } else if (operator === "-") {
+        result = a - b;
+    } else if (operator === "×") {
+        result = a * b;
+    } else if (operator === "÷") {
+        if (b === 0) {
+            displayScreen.innerText = "Cannot divide by 0";
+            displayHistory.innerText = "";
+            currentNumber = "";
+            previousNumber = "";
+            operator = "";
+            return;
+        }
+        result = a / b;
+    } else if (operator === "%") {
+        result = a % b;
+    }
+
+    // lamba decimal na aaye (jaise 0.1 + 0.2)
+    result = Math.round(result * 1000000) / 1000000;
+
+    displayHistory.innerText = previousNumber + " " + operator + " " + currentNumber + " =";
+    currentNumber = result.toString();
+    previousNumber = "";
+    operator = "";
+    updateScreen();
+}
+
+// C button: sab kuch saaf
+function clearAll() {
+    currentNumber = "";
+    previousNumber = "";
+    operator = "";
+    displayHistory.innerText = "";
+    displayScreen.innerText = "0";
+}
+
+// DEL button: aakhri digit hatao
+function deleteLast() {
+    currentNumber = currentNumber.slice(0, -1);
+    updateScreen();
+}
+
+// Screen par number dikhao
+function updateScreen() {
+    if (currentNumber === "") {
+        displayScreen.innerText = "0";
+    } else {
+        displayScreen.innerText = currentNumber;
+    }
+}
+
+// Keyboard se bhi chale
+document.addEventListener("keydown", function (e) {
+    if (e.key >= "0" && e.key <= "9") {
+        appendNumber(e.key);
+    } else if (e.key === ".") {
+        appendNumber(".");
+    } else if (e.key === "+" || e.key === "-" || e.key === "%") {
+        chooseOperator(e.key);
+    } else if (e.key === "*") {
+        chooseOperator("×");
+    } else if (e.key === "/") {
+        chooseOperator("÷");
+    } else if (e.key === "Enter" || e.key === "=") {
+        calculate();
+    } else if (e.key === "Backspace") {
+        deleteLast();
+    } else if (e.key === "Escape") {
+        clearAll();
+    }
+});
+
+    </script>
+</body>
+</html>
